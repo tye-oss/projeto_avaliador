@@ -1,5 +1,5 @@
 import mysql.connector
-from config import Config
+from app.config import Config
 import logging
 
 # Configuração do logger

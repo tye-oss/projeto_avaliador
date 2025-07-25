@@ -1,4 +1,4 @@
-from backend_mysql import Backend
+from app.backend_mysql import Backend
 
 class Caixa:
     def __init__(self):

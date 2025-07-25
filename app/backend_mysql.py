@@ -1,44 +1,34 @@
-from database import Database
+import mysql.connector
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Carrega as variáveis do .env
 
 class Backend:
     def __init__(self):
-        self.db = Database()
-        self.criar_tabela()
-
-    def criar_tabela(self):
-        query = """
-        CREATE TABLE IF NOT EXISTS produtos (
-            nome VARCHAR(255) PRIMARY KEY,
-            quantidade INT,
-            preco DOUBLE
+        print("🔐 Conectando ao banco via .env...")
+        self.conn = mysql.connector.connect(
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME")
         )
-        """
-        self.db.execute_query(query)
-
-    def listar_produtos(self):
-        query = "SELECT * FROM produtos"
-        return self.db.execute_query(query, fetch=True)
-
-    def adicionar_produto(self, nome, quantidade, preco):
-        query = """
-        INSERT INTO produtos (nome, quantidade, preco)
-        VALUES (%s, %s, %s)
-        ON DUPLICATE KEY UPDATE quantidade=%s, preco=%s
-        """
-        self.db.execute_query(query, (nome, quantidade, preco, quantidade, preco))
+        self.cursor = self.conn.cursor()
+        
+        
+    def adicionar_produto(self, nome, qtd, preco):
+        query = "INSERT INTO produtos (nome, quantidade, preco) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE quantidade=quantidade+%s, preco=%s"
+        self.cursor.execute(query, (nome, qtd, preco, qtd, preco))
+        self.conn.commit()
 
     def remover_produto(self, nome):
         query = "DELETE FROM produtos WHERE nome = %s"
-        self.db.execute_query(query, (nome,))
+        self.cursor.execute(query, (nome,))
+        self.conn.commit()
 
-    def buscar_produto(self, nome):
-        query = "SELECT quantidade, preco FROM produtos WHERE nome = %s"
-        result = self.db.execute_query(query, (nome,), fetch=True)
-        return result[0] if result else None
-
-    def atualizar_quantidade(self, nome, nova_qtd):
-        query = "UPDATE produtos SET quantidade = %s WHERE nome = %s"
-        self.db.execute_query(query, (nova_qtd, nome))
+    def listar_produtos(self):
+        self.cursor.execute("SELECT nome, quantidade, preco FROM produtos")
+        return self.cursor.fetchall()
 
     def fechar(self):
-        self.db.close()
+        self.conn.close()
