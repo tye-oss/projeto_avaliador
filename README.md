@@ -38,7 +38,7 @@ env
 DB_HOST=localhost
 DB_USER=usuario
 DB_PASSWORD=senha
-DB_NAME=pyonerp_db
+DB_NAME=your_bank
 🛢️ Estrutura da Tabela no MySQL
 Execute no MySQL:
 
